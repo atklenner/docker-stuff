@@ -10,6 +10,7 @@ const {
 const express = require("express");
 const mongoose = require("mongoose");
 const session = require("express-session");
+const cors = require("cors");
 const redis = require("redis");
 let RedisStore = require("connect-redis")(session);
 let redisClient = redis.createClient({
@@ -28,23 +29,26 @@ mongoose
   .then(() => console.log("connected to database"))
   .catch((err) => console.error(err));
 
+app.enable("trust proxy");
+app.use(cors({}));
 app.use(
   session({
     store: new RedisStore({ client: redisClient }),
     secret: SESSION_SECRET,
     cookie: {
-      secure: false,
       resave: false,
-      saveUnitialized: false,
+      saveUninitialized: false,
+      secure: false,
       httpOnly: true,
-      maxAge: 30000000,
+      maxAge: 30000,
     },
   })
 );
 app.use(express.json());
 
-app.get("/", (req, res) => {
+app.get("/api/v1/", (req, res) => {
   res.send("<h2>Hi there</h2>");
+  console.log("yeah it ran");
 });
 
 app.use("/api/v1/posts", postRouter);
